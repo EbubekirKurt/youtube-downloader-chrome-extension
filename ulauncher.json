@@ -1,0 +1,10 @@
+{
+  "name": "YouTube Video İndirici",
+  "description": "YouTube videolarını MP3/MP4 formatında indirin",
+  "icon": "icons/icon48.png",
+  "executable": "python",
+  "arguments": ["server.py"],
+  "working_directory": "/c/Users/ebube/OneDrive/Masaüstü/YoutubeConverter",
+  "categories": ["Video", "Audio", "Internet"],
+  "keywords": ["youtube", "video", "download", "mp3", "mp4", "indirici"]
+}

@@ -117,8 +117,8 @@ async function checkDownloadStatusFast(videoId, format, maxAttempts = 2) {
                 const downloadResponse = await fetch(`http://localhost:5000/api/downloads`);
                 const downloads = await downloadResponse.json();
                 
-                // Video ID'si ile dosyayı bul
-                const file = downloads.files.find(f => f.name.includes(videoId));
+                // Video ID'si ile dosyayı bul (sadece mp3/mp4 dosyaları)
+                const file = downloads.files.find(f => f.name.startsWith(videoId) && (f.name.endsWith('.mp3') || f.name.endsWith('.mp4')));
                 if (file) {
                     return `http://localhost:5000/api/download/${file.name}`;
                 }
@@ -135,14 +135,14 @@ async function checkDownloadStatusFast(videoId, format, maxAttempts = 2) {
             attempts++;
             if (attempts >= maxAttempts) {
                 // Zaman aşımı durumunda direkt dosya URL'si döndür
-                return `http://localhost:5000/api/download/video_${videoId}.${format}`;
+                return `http://localhost:5000/api/download/${videoId}.${format}`;
             }
             await new Promise(resolve => setTimeout(resolve, 500));
         }
     }
     
     // Zaman aşımı durumunda direkt dosya URL'si döndür
-    return `http://localhost:5000/api/download/video_${videoId}.${format}`;
+    return `http://localhost:5000/api/download/${videoId}.${format}`;
 }
 
 // Uzun süreli indirme durumu kontrolü (gerekirse)
@@ -159,8 +159,8 @@ async function checkDownloadStatus(videoId, maxAttempts = 30) {
                 const downloadResponse = await fetch(`http://localhost:5000/api/downloads`);
                 const downloads = await downloadResponse.json();
                 
-                // Video ID'si ile dosyayı bul
-                const file = downloads.files.find(f => f.name.includes(videoId));
+                // Video ID'si ile dosyayı bul (sadece mp3/mp4 dosyaları)
+                const file = downloads.files.find(f => f.name.startsWith(videoId) && (f.name.endsWith('.mp3') || f.name.endsWith('.mp4')));
                 if (file) {
                     return `http://localhost:5000/api/download/${file.name}`;
                 }
@@ -191,8 +191,7 @@ function generateFileName(title, format) {
     const cleanTitle = title
         .replace(/[<>:"/\\|?*]/g, '') // Geçersiz karakterleri kaldır
         .replace(/\s+/g, '_') // Boşlukları alt çizgi ile değiştir
-        .substring(0, 50) // Uzunluğu sınırla
-        + '_abulauncher'; // Sonuna abulauncher ekle
+        .substring(0, 50); // Uzunluğu sınırla
     
     return `${cleanTitle}.${format}`;
 }
@@ -202,16 +201,4 @@ chrome.runtime.onInstalled.addListener(() => {
     console.log('YouTube Video İndirici extension yüklendi');
 });
 
-// Tab güncellendiğinde
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    // YouTube sayfalarında content script'i çalıştır
-    if (changeInfo.status === 'complete' && 
-        tab.url && 
-        (tab.url.includes('youtube.com/watch') || tab.url.includes('youtu.be/'))) {
-        
-        chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            files: ['content.js']
-        });
-    }
-});
+// Content script manifest.json'da tanımlı olduğu için bu koda gerek yok
