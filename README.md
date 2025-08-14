@@ -124,3 +124,11 @@ netstat -an | findstr :5000
 - Extension sadece YouTube sayfalarında çalışır
 - Kişisel verilerinizi toplamaz
 - Yerel API server kullanır (internet bağlantısı gerekmez)
+## 📝 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+---
+
+**Not**: Bu extension eğitim amaçlıdır. YouTube'un kullanım şartlarına uygun kullanın.
+
