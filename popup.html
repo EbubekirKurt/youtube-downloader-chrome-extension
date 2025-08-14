@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; object-src 'self'">
+    <title>YouTube Video İndirici</title>
+    <style>
+        body {
+            width: 400px;
+            min-height: 420px;
+            margin: 0;
+            padding: 15px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .header p {
+            margin: 3px 0 0 0;
+            opacity: 0.9;
+            font-size: 13px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section h3 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .video-list {
+            max-height: 160px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 6px;
+        }
+
+        .video-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .video-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .video-item.selected {
+            background: rgba(255, 255, 255, 0.25);
+            border: 2px solid #74b9ff;
+            box-shadow: 0 4px 12px rgba(116, 185, 255, 0.3);
+        }
+
+        .video-checkbox {
+            width: 18px;
+            height: 18px;
+            accent-color: #74b9ff;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .video-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .video-title {
+            font-weight: 600;
+            margin-bottom: 3px;
+            font-size: 13px;
+        }
+
+        .video-url {
+            font-size: 10px;
+            opacity: 0.6;
+            word-break: break-all;
+            margin-top: 2px;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: rgba(46, 204, 113, 0.3);
+            border: 1px solid rgba(46, 204, 113, 0.5);
+        }
+
+        .status.error {
+            background: rgba(231, 76, 60, 0.3);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+        }
+
+        .status.info {
+            background: rgba(52, 152, 219, 0.3);
+            border: 1px solid rgba(52, 152, 219, 0.5);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            accent-color: #74b9ff;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .video-count {
+            background: rgba(116, 185, 255, 0.2);
+            color: #74b9ff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .options-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-buttons .btn {
+            flex: 1;
+            margin-bottom: 0;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎥 YouTube Video İndirici</h1>
+        <p>Chrome sekmelerinden YouTube videolarını indirin</p>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <h3>📋 Bulunan YouTube Videoları</h3>
+            <span id="videoCount" class="video-count">0 video</span>
+        </div>
+        <div id="videoList" class="video-list">
+            <div style="text-align: center; opacity: 0.7;">
+                YouTube videoları taranıyor...
+            </div>
+        </div>
+        <button id="scanBtn" class="btn btn-secondary">🔄 Sekmeleri Tara</button>
+    </div>
+
+    <div class="section">
+        <h3>⚙️ İndirme Seçenekleri</h3>
+        <div class="options-row">
+            <div class="form-group">
+                <label for="format">Format:</label>
+                <select id="format">
+                    <option value="mp3">MP3 Audio</option>
+                    <option value="mp4">MP4 Video</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quality">Kalite:</label>
+                <select id="quality">
+                    <option value="best">En İyi</option>
+                    <option value="1080p">1080p</option>
+                    <option value="720p">720p</option>
+                    <option value="480p">480p</option>
+                    <option value="360p">360p</option>
+                    <option value="worst">En Düşük</option>
+                </select>
+            </div>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="selectAll">
+            <label for="selectAll">Tümünü Seç</label>
+        </div>
+        <div class="download-buttons">
+            <button id="downloadBtn" class="btn" disabled>📥 Seçilenleri İndir</button>
+            <button id="downloadAllBtn" class="btn btn-secondary" disabled>📥 Tümünü İndir</button>
+        </div>
+    </div>
+
+    <div id="status" class="status info" style="display: none;"></div>
+    
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>İndiriliyor...</div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
